@@ -7,9 +7,7 @@ searchForm.addEventListener("submit", async function(event) {
     const searchTerm = searchInput.value;
     // console.log("My search term is:", searchTerm);
 
-    const url = `https://api.inaturalist.org/v1/places/autocomplete?q=${searchTerm}`;
-
-    let response = await fetch(url);
+    let response = await fetch(`https://api.inaturalist.org/v1/places/autocomplete?q=${searchTerm}`);
     let data = await response.json();
     // console.log(data);
 
@@ -24,11 +22,33 @@ searchForm.addEventListener("submit", async function(event) {
         let html = "";
         for (let place of places) {
             html += `<li><button type="button" onclick="getDetails('${place.id}')">${place.display_name}</button></li>`;
+            html += `<div id="${place.id}"></div>`;
         }
         document.getElementById("results").innerHTML = html;
     }
 });
 
 async function getDetails(id) {
+    console.log("The ID received by getDetails is:", id);
+    let response = await fetch(`https://api.inaturalist.org/v1/observations?place_id=${id}`);
+    let data = await response.json();
+    console.log(data);
+    if (data.results && data.results.length > 0) {
+        let observation = data.results[0];
 
+    let html = `<h2>${observation.taxon.name}</h2>`;
+    if (observation.photos && observation.photos.length > 0) {
+        html += `<img src="${observation.photos[0].url}" alt="Observation" width="200" height="200">`;
+    } else {
+        html += `<p>No photos available</p>`;
+    }
+
+    const placeDetails = document.getElementById(id);
+    if (placeDetails) {
+        placeDetails.innerHTML = html;
+    } else {
+        console.log("No observation details found for this ID.");
+    }
+
+    }
 }
